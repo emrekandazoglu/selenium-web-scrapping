@@ -1,5 +1,25 @@
 {
   "dependencies": {
+    "cloudscraper": "^4.6.0",
+    "puppeteer": "^24.3.1",
     "selenium-webdriver": "^4.29.0"
-  }
+  },
+  "name": "selenium-web-scrapping",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emrekandazoglu/selenium-web-scrapping.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emrekandazoglu/selenium-web-scrapping/issues"
+  },
+  "homepage": "https://github.com/emrekandazoglu/selenium-web-scrapping#readme",
+  "description": ""
 }
