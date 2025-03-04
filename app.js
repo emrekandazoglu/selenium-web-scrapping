@@ -35,10 +35,13 @@ async function getCommonUsages(word) {
 			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
 		);
 
-		await page.goto(`https://tureng.com/tr/turkce-ingilizce/${word}`, {
-			waitUntil: 'domcontentloaded',
-			timeout: 5000,
-		});
+		await page.goto(
+			`https://tureng.com/tr/turkce-ingilizce/${encodeURIComponent(word)}`,
+			{
+				waitUntil: 'domcontentloaded',
+				timeout: 5000,
+			}
+		);
 
 		await page.waitForSelector(
 			'tr.tureng-manual-stripe-odd, tr.tureng-manual-stripe-even',
@@ -52,23 +55,51 @@ async function getCommonUsages(word) {
 				'tr.tureng-manual-stripe-odd, tr.tureng-manual-stripe-even'
 			);
 			const results = [];
+			const wordTypes = {
+				'i.': 'isim',
+				'f.': 'fiil',
+				's.': 'sıfat',
+				'zm.': 'zamir',
+				'ed.': 'edat',
+				'bağ.': 'bağlaç',
+				'zf.': 'zarf',
+			};
+
+			const generalResults = [];
 
 			rows.forEach(row => {
 				const category = row
 					.querySelector('td.hidden-xs:nth-child(2)')
 					?.textContent?.trim();
-				if (category === 'Yaygın Kullanım') {
-					let englishText = row.querySelector('td.en.tm')?.textContent?.trim();
-					englishText = englishText.replace(/\s*i\.$/, '').trim(); // "i." ekini kaldır
+				const isCommonUsage = category === 'Yaygın Kullanım';
+				const isGeneral = category === 'Genel';
 
-					results.push({
-						number: row.querySelector('td.rc0')?.textContent?.trim(),
-						english: englishText,
-						turkish: row.querySelector('td.tr.ts')?.textContent?.trim(),
-					});
+				let englishText =
+					row.querySelector('td.en.tm a')?.textContent?.trim() || '';
+				let turkishText =
+					row.querySelector('td.tr.ts a')?.textContent?.trim() || '';
+				let typeText =
+					row.querySelector('td.en.tm i')?.textContent?.trim() || '';
+
+				// Eğer tür bilgisi `<i>` etiketi içinde bulunmuşsa, doğrudan bunu kullan
+				let type = wordTypes[typeText] || 'Bilinmiyor';
+
+				const entry = {
+					number: row.querySelector('td.rc0')?.textContent?.trim() || '',
+					english: englishText,
+					turkish: turkishText,
+					type: type,
+				};
+
+				if (isCommonUsage) {
+					results.push(entry);
+				} else if (isGeneral) {
+					generalResults.push(entry);
 				}
 			});
-			return results;
+
+			// Eğer yaygın kullanım bulunmadıysa, genel çevirilerden ilk 5 tanesini al
+			return results.length > 0 ? results : generalResults.slice(0, 5);
 		});
 
 		console.log('Yaygın Kullanım Çevirileri:', commonUsages);
@@ -82,5 +113,5 @@ async function getCommonUsages(word) {
 }
 
 // Kullanım
-const word = 'table';
+const word = 'because of';
 getCommonUsages(word);
